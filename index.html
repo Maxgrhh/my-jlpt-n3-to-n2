@@ -716,6 +716,7 @@ answer is the index (0-3) of the correct option. Make questions genuinely N2 lev
               <span>🔥 {progress.streak} day streak</span>
               <span>📊 {n2Readiness}% N2 ready</span>
               <button onClick={() => { localStorage.removeItem("jlpt_apikey"); setApiKey(""); }} style={{ padding: "3px 10px", background: "#1e1e3a", border: "1px solid #3a3a5a", borderRadius: 8, color: "#7070a0", cursor: "pointer", fontSize: 11 }}>Change Key</button>
+              <button onClick={() => { if (window.confirm("Reset all progress? This cannot be undone.")) { localStorage.clear(); window.location.reload(); } }} style={{ padding: "3px 10px", background: "#1e1e3a", border: "1px solid #7f1d1d", borderRadius: 8, color: "#ef4444", cursor: "pointer", fontSize: 11 }}>Reset</button>
             </div>
           </div>
           <div style={{ display: "flex", gap: 4, padding: "10px 20px", background: "#12122a", overflowX: "auto" }}>
