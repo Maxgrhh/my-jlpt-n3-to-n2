@@ -81,8 +81,12 @@
               <button
                 onClick={() => key.trim() && onSave(key.trim())}
                 disabled={!key.trim()}
-                style={{ width: "100%", padding: 12, background: key.trim() ? "#7c3aed" : "#2a2a4a", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: key.trim() ? "pointer" : "default", fontSize: 15 }}
+                style={{ width: "100%", padding: 12, background: key.trim() ? "#7c3aed" : "#2a2a4a", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: key.trim() ? "pointer" : "default", fontSize: 15, marginBottom: 10 }}
               >Start Studying →</button>
+              <button
+                onClick={() => { if (window.confirm("Clear all saved data and start fresh?")) { localStorage.clear(); window.location.reload(); } }}
+                style={{ width: "100%", padding: 10, background: "transparent", border: "1px solid #7f1d1d", borderRadius: 10, color: "#ef4444", fontWeight: 600, cursor: "pointer", fontSize: 13 }}
+              >🗑 Clear saved data & reset</button>
             </Card>
           </div>
         </div>
