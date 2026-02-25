@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JLPT N3→N2 Study App</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0f0f1a; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; }
+    button { font-family: inherit; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    const VOCAB = [
+      { id: 1, kanji: "確認", reading: "かくにん", meaning: "confirmation, verification", example: "メールを確認してください。", level: "N2" },
+      { id: 2, kanji: "影響", reading: "えいきょう", meaning: "influence, effect", example: "天気が気分に影響する。", level: "N2" },
+      { id: 3, kanji: "判断", reading: "はんだん", meaning: "judgment, decision", example: "自分で判断してください。", level: "N2" },
+      { id: 4, kanji: "状況", reading: "じょうきょう", meaning: "situation, circumstances", example: "現在の状況を説明します。", level: "N2" },
+      { id: 5, kanji: "目的", reading: "もくてき", meaning: "purpose, objective", example: "旅行の目的は何ですか？", level: "N3" },
+      { id: 6, kanji: "必要", reading: "ひつよう", meaning: "necessary, needed", example: "休みが必要だ。", level: "N3" },
+      { id: 7, kanji: "可能", reading: "かのう", meaning: "possible, potential", example: "それは可能ですか？", level: "N2" },
+      { id: 8, kanji: "経験", reading: "けいけん", meaning: "experience", example: "海外経験があります。", level: "N2" },
+      { id: 9, kanji: "関係", reading: "かんけい", meaning: "relationship, connection", example: "二つの問題は関係がある。", level: "N3" },
+      { id: 10, kanji: "理由", reading: "りゆう", meaning: "reason, cause", example: "理由を教えてください。", level: "N3" },
+    ];
+
+    const GRAMMAR = [
+      { id: 1, pattern: "〜に関して", meaning: "regarding, concerning", example: "この件に関してご連絡します。", translation: "I will contact you regarding this matter.", quiz: "この問題___詳しく説明します。", answer: "に関して", options: ["に関して", "について", "に対して", "にとって"] },
+      { id: 2, pattern: "〜にもかかわらず", meaning: "despite, in spite of", example: "雨にもかかわらず、試合は続いた。", translation: "Despite the rain, the game continued.", quiz: "努力した___、失敗した。", answer: "にもかかわらず", options: ["にもかかわらず", "のに", "けれど", "ながら"] },
+      { id: 3, pattern: "〜に対して", meaning: "towards, against, in contrast to", example: "子供に対して優しくしてください。", translation: "Please be kind towards children.", quiz: "親___感謝しています。", answer: "に対して", options: ["に対して", "に関して", "について", "によって"] },
+      { id: 4, pattern: "〜によって", meaning: "by means of, due to, depending on", example: "努力によって成功できる。", translation: "You can succeed through effort.", quiz: "人___考え方が違う。", answer: "によって", options: ["によって", "により", "に対して", "にとって"] },
+      { id: 5, pattern: "〜わけではない", meaning: "it doesn't mean that, not necessarily", example: "嫌いなわけではない。", translation: "It's not that I dislike it.", quiz: "全員が賛成した___。", answer: "わけではない", options: ["わけではない", "ことはない", "はずがない", "べきではない"] },
+    ];
+
+    const LISTENING = [
+      { id: 1, text: "明日の会議は午後2時から始まります。場所は3階の会議室Bです。資料を忘れずに持ってきてください。", question: "会議はどこで行われますか？", options: ["2階の会議室A", "3階の会議室B", "4階の会議室C", "1階のロビー"], answer: 1 },
+      { id: 2, text: "電車が遅れているため、田中さんは10分ほど遅刻するそうです。先に始めてもいいと連絡がありました。", question: "田中さんはなぜ遅刻しますか？", options: ["病気のため", "電車が遅れているため", "仕事が忙しいため", "道に迷ったため"], answer: 1 },
+      { id: 3, text: "本日のセール品は、食料品が20%引き、衣類が30%引きになっています。セールは今日の夜8時までです。", question: "衣類は何%引きですか？", options: ["10%引き", "20%引き", "30%引き", "40%引き"], answer: 2 },
+    ];
+
+    const READING = [
+      {
+        id: 1,
+        title: "日本の四季",
+        passage: "日本には春、夏、秋、冬の四つの季節があります。春は桜の花が咲き、多くの人が花見を楽しみます。夏は暑く、海や山に行く人が多いです。秋は紅葉が美しく、食べ物もおいしい季節です。冬は寒く、雪が降る地域もあります。日本人は季節の変化を大切にしており、それぞれの季節に合った行事や食べ物を楽しんでいます。",
+        questions: [
+          { q: "春に多くの人が楽しむことは何ですか？", options: ["海水浴", "花見", "紅葉狩り", "雪祭り"], answer: 1 },
+          { q: "この文章のテーマは何ですか？", options: ["日本の食べ物", "日本の行事", "日本の四季", "日本の気候"], answer: 2 },
+        ]
+      }
+    ];
+
+    const SPEAKING = [
+      { id: 1, japanese: "最近、仕事がとても忙しくて疲れています。", romaji: "Saikin, shigoto ga totemo isogashikute tsukarete imasu.", english: "Recently, work has been very busy and I'm tired.", tip: "Focus on the て-form connecting clauses: 忙しくて疲れています" },
+      { id: 2, japanese: "この映画を見て、いろいろなことを考えさせられました。", romaji: "Kono eiga wo mite, iroiro na koto wo kangaesaseraremashita.", english: "Watching this movie made me think about various things.", tip: "Note the causative-passive form: 考えさせられました" },
+      { id: 3, japanese: "友達に頼まれたので、手伝うことにしました。", romaji: "Tomodachi ni tanomareta node, tetsudau koto ni shimashita.", english: "Since my friend asked me, I decided to help.", tip: "ことにしました expresses a decision made" },
+    ];
+
+    const SECTIONS = ["Dashboard", "Vocabulary", "Grammar", "Listening", "Reading", "Speaking"];
+    const STORAGE_KEY = "jlpt_progress_v1";
+
+    function loadProgress() {
+      try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; }
+    }
+    function saveProgress(p) {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {}
+    }
+    function initProgress() {
+      return { xp: 0, streak: 0, lastStudied: null, vocab: {}, grammar: {}, listening: {}, reading: {}, speaking: {}, sectionXP: { Vocabulary: 0, Grammar: 0, Listening: 0, Reading: 0, Speaking: 0 } };
+    }
+
+    function Card({ children, style }) {
+      return <div style={{ background: "#1a1a2e", border: "1px solid #2a2a4a", borderRadius: 12, padding: 20, marginBottom: 16, ...style }}>{children}</div>;
+    }
+
+    function Dashboard({ progress, n2Readiness, setSection }) {
+      const sections = [
+        { name: "Vocabulary", icon: "📖", xp: progress.sectionXP.Vocabulary, color: "#7c3aed" },
+        { name: "Grammar", icon: "✏️", xp: progress.sectionXP.Grammar, color: "#2563eb" },
+        { name: "Listening", icon: "🎧", xp: progress.sectionXP.Listening, color: "#059669" },
+        { name: "Reading", icon: "📰", xp: progress.sectionXP.Reading, color: "#d97706" },
+        { name: "Speaking", icon: "🗣️", xp: progress.sectionXP.Speaking, color: "#dc2626" },
+      ];
+      return (
+        <div>
+          <Card>
+            <div style={{ marginBottom: 8, fontWeight: 700, fontSize: 18 }}>N2 Readiness</div>
+            <div style={{ background: "#0f0f1a", borderRadius: 8, height: 18, overflow: "hidden", marginBottom: 8 }}>
+              <div style={{ height: "100%", width: `${n2Readiness}%`, background: "linear-gradient(90deg, #7c3aed, #a78bfa)", borderRadius: 8, transition: "width 0.5s" }} />
+            </div>
+            <div style={{ color: "#a78bfa", fontWeight: 700, fontSize: 22 }}>{n2Readiness}%</div>
+            <div style={{ color: "#7070a0", fontSize: 12, marginTop: 4 }}>Keep studying daily to reach N2! 🎯</div>
+          </Card>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+            {sections.map(s => (
+              <div key={s.name} onClick={() => setSection(s.name)} style={{ background: "#1a1a2e", border: `1px solid ${s.color}40`, borderRadius: 12, padding: 16, cursor: "pointer", display: "flex", alignItems: "center", gap: 12 }}>
+                <span style={{ fontSize: 28 }}>{s.icon}</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{s.name}</div>
+                  <div style={{ fontSize: 12, color: s.color }}>+{s.xp} XP earned</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Card style={{ background: "#16213e" }}>
+            <div style={{ fontWeight: 700, marginBottom: 8 }}>📅 Today's Study Plan</div>
+            <div style={{ color: "#c0c0e0", fontSize: 14, lineHeight: 1.8 }}>
+              ✅ Complete 10 vocabulary flashcards<br />
+              ✅ Practice 3 grammar patterns<br />
+              ✅ Listen to 2 audio clips<br />
+              ✅ Read one passage<br />
+              ✅ Shadow 3 speaking sentences
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    function VocabSection({ progress, addXP, markItem }) {
+      const [idx, setIdx] = useState(0);
+      const [flipped, setFlipped] = useState(false);
+      const [feedback, setFeedback] = useState(null);
+      const card = VOCAB[idx];
+      function next(correct) {
+        markItem("vocab", card.id, correct);
+        if (correct) addXP(10, "Vocabulary");
+        setFeedback(correct ? "correct" : "wrong");
+        setTimeout(() => { setFeedback(null); setFlipped(false); setIdx(i => (i + 1) % VOCAB.length); }, 800);
+      }
+      return (
+        <div>
+          <h2 style={{ color: "#a78bfa", marginTop: 0 }}>📖 Vocabulary</h2>
+          <div style={{ color: "#7070a0", marginBottom: 16, fontSize: 13 }}>Card {idx + 1} of {VOCAB.length} · +10 XP per correct answer</div>
+          <div onClick={() => setFlipped(!flipped)} style={{ background: feedback === "correct" ? "#064e3b" : feedback === "wrong" ? "#7f1d1d" : "#1a1a2e", border: `2px solid ${feedback === "correct" ? "#10b981" : feedback === "wrong" ? "#ef4444" : "#7c3aed"}`, borderRadius: 16, padding: 40, textAlign: "center", cursor: "pointer", minHeight: 180, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", transition: "all 0.3s", marginBottom: 16 }}>
+            {!flipped ? (
+              <><div style={{ fontSize: 52, fontWeight: 700, marginBottom: 8 }}>{card.kanji}</div><div style={{ color: "#7070a0", fontSize: 13 }}>Tap to reveal</div></>
+            ) : (
+              <><div style={{ fontSize: 36, fontWeight: 700, marginBottom: 4 }}>{card.kanji}</div><div style={{ fontSize: 18, color: "#a78bfa", marginBottom: 4 }}>{card.reading}</div><div style={{ fontSize: 16, color: "#e8e8f0", marginBottom: 8 }}>{card.meaning}</div><div style={{ fontSize: 13, color: "#7070a0", fontStyle: "italic" }}>{card.example}</div><div style={{ marginTop: 6, fontSize: 11, color: "#5050a0" }}>Level: {card.level}</div></>
+            )}
+          </div>
+          {flipped && !feedback && (
+            <div style={{ display: "flex", gap: 12 }}>
+              <button onClick={() => next(false)} style={{ flex: 1, padding: 12, background: "#7f1d1d", border: "none", borderRadius: 10, color: "#fca5a5", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>✗ Didn't know</button>
+              <button onClick={() => next(true)} style={{ flex: 1, padding: 12, background: "#064e3b", border: "none", borderRadius: 10, color: "#6ee7b7", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>✓ Got it!</button>
+            </div>
+          )}
+          {!flipped && <button onClick={() => setFlipped(true)} style={{ width: "100%", padding: 12, background: "#7c3aed", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>Reveal Answer</button>}
+        </div>
+      );
+    }
+
+    function GrammarSection({ progress, addXP, markItem }) {
+      const [idx, setIdx] = useState(0);
+      const [selected, setSelected] = useState(null);
+      const [showResult, setShowResult] = useState(false);
+      const g = GRAMMAR[idx];
+      function select(opt) {
+        if (showResult) return;
+        setSelected(opt); setShowResult(true);
+        const correct = opt === g.answer;
+        markItem("grammar", g.id, correct);
+        if (correct) addXP(15, "Grammar");
+      }
+      function next() { setSelected(null); setShowResult(false); setIdx(i => (i + 1) % GRAMMAR.length); }
+      return (
+        <div>
+          <h2 style={{ color: "#60a5fa", marginTop: 0 }}>✏️ Grammar</h2>
+          <Card>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#60a5fa", marginBottom: 4 }}>{g.pattern}</div>
+            <div style={{ color: "#c0c0e0", marginBottom: 4 }}>{g.meaning}</div>
+            <div style={{ fontSize: 15, marginBottom: 2 }}>{g.example}</div>
+            <div style={{ fontSize: 13, color: "#7070a0" }}>{g.translation}</div>
+          </Card>
+          <Card>
+            <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 15 }}>Fill in the blank:</div>
+            <div style={{ fontSize: 18, marginBottom: 16, padding: 12, background: "#0f0f1a", borderRadius: 8 }}>{g.quiz}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {g.options.map(opt => {
+                let bg = "#1e1e3a", border = "#2a2a4a";
+                if (showResult) { if (opt === g.answer) { bg = "#064e3b"; border = "#10b981"; } else if (opt === selected && opt !== g.answer) { bg = "#7f1d1d"; border = "#ef4444"; } }
+                return <button key={opt} onClick={() => select(opt)} style={{ padding: 10, background: bg, border: `1px solid ${border}`, borderRadius: 8, color: "#e8e8f0", cursor: showResult ? "default" : "pointer", fontSize: 14, fontWeight: 500, transition: "all 0.2s" }}>{opt}</button>;
+              })}
+            </div>
+            {showResult && <div style={{ marginTop: 12, padding: 10, background: selected === g.answer ? "#064e3b" : "#7f1d1d", borderRadius: 8, fontSize: 14 }}>{selected === g.answer ? "✅ Correct! +15 XP" : `❌ Correct answer: ${g.answer}`}</div>}
+          </Card>
+          {showResult && <button onClick={next} style={{ width: "100%", padding: 12, background: "#2563eb", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>Next Pattern →</button>}
+        </div>
+      );
+    }
+
+    function ListeningSection({ progress, addXP, markItem }) {
+      const [idx, setIdx] = useState(0);
+      const [playing, setPlaying] = useState(false);
+      const [selected, setSelected] = useState(null);
+      const [showResult, setShowResult] = useState(false);
+      const item = LISTENING[idx];
+      function speak() {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(item.text);
+        utter.lang = "ja-JP"; utter.rate = 0.85;
+        utter.onstart = () => setPlaying(true); utter.onend = () => setPlaying(false);
+        window.speechSynthesis.speak(utter);
+      }
+      function select(i) {
+        if (showResult) return;
+        setSelected(i); setShowResult(true);
+        const correct = i === item.answer;
+        markItem("listening", item.id, correct);
+        if (correct) addXP(20, "Listening");
+      }
+      function next() { window.speechSynthesis && window.speechSynthesis.cancel(); setSelected(null); setShowResult(false); setPlaying(false); setIdx(i => (i + 1) % LISTENING.length); }
+      return (
+        <div>
+          <h2 style={{ color: "#34d399", marginTop: 0 }}>🎧 Listening</h2>
+          <Card>
+            <div style={{ textAlign: "center", marginBottom: 16 }}>
+              <button onClick={speak} disabled={playing} style={{ padding: "14px 32px", background: playing ? "#1e4a3a" : "#059669", border: "none", borderRadius: 30, color: "#fff", fontWeight: 700, cursor: playing ? "default" : "pointer", fontSize: 16 }}>{playing ? "🔊 Playing..." : "▶ Play Audio"}</button>
+            </div>
+            <div style={{ color: "#7070a0", fontSize: 12, textAlign: "center" }}>Clip {idx + 1} of {LISTENING.length}</div>
+          </Card>
+          <Card>
+            <div style={{ fontWeight: 600, marginBottom: 12 }}>{item.question}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {item.options.map((opt, i) => {
+                let bg = "#1e1e3a", border = "#2a2a4a";
+                if (showResult) { if (i === item.answer) { bg = "#064e3b"; border = "#10b981"; } else if (i === selected && i !== item.answer) { bg = "#7f1d1d"; border = "#ef4444"; } }
+                return <button key={i} onClick={() => select(i)} style={{ padding: 10, background: bg, border: `1px solid ${border}`, borderRadius: 8, color: "#e8e8f0", cursor: showResult ? "default" : "pointer", fontSize: 14, textAlign: "left" }}>{i + 1}. {opt}</button>;
+              })}
+            </div>
+            {showResult && (
+              <div style={{ marginTop: 12 }}>
+                <div style={{ padding: 10, background: selected === item.answer ? "#064e3b" : "#7f1d1d", borderRadius: 8, fontSize: 14, marginBottom: 8 }}>{selected === item.answer ? "✅ Correct! +20 XP" : `❌ Correct: ${item.options[item.answer]}`}</div>
+                <div style={{ background: "#0f0f1a", padding: 10, borderRadius: 8, fontSize: 13, color: "#c0c0e0" }}><strong>Transcript:</strong> {item.text}</div>
+              </div>
+            )}
+          </Card>
+          {showResult && <button onClick={next} style={{ width: "100%", padding: 12, background: "#059669", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>Next Clip →</button>}
+        </div>
+      );
+    }
+
+    function ReadingSection({ progress, addXP, markItem }) {
+      const [qIdx, setQIdx] = useState(0);
+      const [selected, setSelected] = useState(null);
+      const [showResult, setShowResult] = useState(false);
+      const passage = READING[0];
+      const q = passage.questions[qIdx];
+      function select(i) {
+        if (showResult) return;
+        setSelected(i); setShowResult(true);
+        if (i === q.answer) addXP(20, "Reading");
+      }
+      function next() { setSelected(null); setShowResult(false); setQIdx(i => (i + 1) % passage.questions.length); }
+      return (
+        <div>
+          <h2 style={{ color: "#fbbf24", marginTop: 0 }}>📰 Reading</h2>
+          <Card>
+            <div style={{ fontWeight: 700, marginBottom: 10, color: "#fbbf24", fontSize: 16 }}>{passage.title}</div>
+            <div style={{ fontSize: 15, lineHeight: 2, color: "#d0d0e8" }}>{passage.passage}</div>
+          </Card>
+          <Card>
+            <div style={{ fontWeight: 600, marginBottom: 12 }}>問題 {qIdx + 1}: {q.q}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {q.options.map((opt, i) => {
+                let bg = "#1e1e3a", border = "#2a2a4a";
+                if (showResult) { if (i === q.answer) { bg = "#064e3b"; border = "#10b981"; } else if (i === selected && i !== q.answer) { bg = "#7f1d1d"; border = "#ef4444"; } }
+                return <button key={i} onClick={() => select(i)} style={{ padding: 10, background: bg, border: `1px solid ${border}`, borderRadius: 8, color: "#e8e8f0", cursor: showResult ? "default" : "pointer", fontSize: 14, textAlign: "left" }}>{i + 1}. {opt}</button>;
+              })}
+            </div>
+            {showResult && <div style={{ marginTop: 10, padding: 10, background: selected === q.answer ? "#064e3b" : "#7f1d1d", borderRadius: 8, fontSize: 14 }}>{selected === q.answer ? "✅ Correct! +20 XP" : `❌ Correct: ${q.options[q.answer]}`}</div>}
+          </Card>
+          {showResult && <button onClick={next} style={{ width: "100%", padding: 12, background: "#d97706", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>Next Question →</button>}
+        </div>
+      );
+    }
+
+    function SpeakingSection({ progress, addXP, markItem }) {
+      const [idx, setIdx] = useState(0);
+      const [playing, setPlaying] = useState(false);
+      const [selfRated, setSelfRated] = useState(false);
+      const item = SPEAKING[idx];
+      function speak() {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utter = new SpeechSynthesisUtterance(item.japanese);
+        utter.lang = "ja-JP"; utter.rate = 0.8;
+        utter.onstart = () => setPlaying(true); utter.onend = () => setPlaying(false);
+        window.speechSynthesis.speak(utter);
+      }
+      function rate(good) { setSelfRated(true); if (good) addXP(15, "Speaking"); markItem("speaking", item.id, good); }
+      function next() { setSelfRated(false); setPlaying(false); window.speechSynthesis && window.speechSynthesis.cancel(); setIdx(i => (i + 1) % SPEAKING.length); }
+      return (
+        <div>
+          <h2 style={{ color: "#f87171", marginTop: 0 }}>🗣️ Speaking / Shadowing</h2>
+          <div style={{ color: "#7070a0", marginBottom: 16, fontSize: 13 }}>Listen → Read along → Shadow the audio → Self-rate your pronunciation</div>
+          <Card>
+            <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 8, lineHeight: 1.6 }}>{item.japanese}</div>
+            <div style={{ color: "#a78bfa", marginBottom: 4, fontSize: 14 }}>{item.romaji}</div>
+            <div style={{ color: "#7070a0", fontSize: 13, marginBottom: 12 }}>{item.english}</div>
+            <div style={{ background: "#0f0f1a", borderRadius: 8, padding: 10, fontSize: 13, color: "#fbbf24" }}>💡 Tip: {item.tip}</div>
+          </Card>
+          <button onClick={speak} disabled={playing} style={{ width: "100%", padding: 12, background: playing ? "#1e1e3a" : "#7c3aed", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: playing ? "default" : "pointer", fontSize: 15, marginBottom: 16 }}>{playing ? "🔊 Listen carefully..." : "▶ Play & Shadow"}</button>
+          {!selfRated ? (
+            <Card>
+              <div style={{ fontWeight: 600, marginBottom: 12 }}>How did your shadowing feel?</div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => rate(false)} style={{ flex: 1, padding: 12, background: "#7f1d1d", border: "none", borderRadius: 10, color: "#fca5a5", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>😅 Need more practice</button>
+                <button onClick={() => rate(true)} style={{ flex: 1, padding: 12, background: "#064e3b", border: "none", borderRadius: 10, color: "#6ee7b7", fontWeight: 700, cursor: "pointer", fontSize: 14 }}>😊 Sounded good! +15 XP</button>
+              </div>
+            </Card>
+          ) : (
+            <button onClick={next} style={{ width: "100%", padding: 12, background: "#dc2626", border: "none", borderRadius: 10, color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: 15 }}>Next Sentence →</button>
+          )}
+          <div style={{ textAlign: "center", color: "#5050a0", fontSize: 12, marginTop: 8 }}>Sentence {idx + 1} of {SPEAKING.length}</div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [section, setSection] = useState("Dashboard");
+      const [progress, setProgress] = useState(() => loadProgress() || initProgress());
+      useEffect(() => { saveProgress(progress); }, [progress]);
+      function addXP(amount, sec) {
+        setProgress(p => {
+          const today = new Date().toDateString();
+          const streak = p.lastStudied === today ? p.streak : (p.lastStudied === new Date(Date.now() - 86400000).toDateString() ? p.streak + 1 : 1);
+          return { ...p, xp: p.xp + amount, streak, lastStudied: today, sectionXP: { ...p.sectionXP, [sec]: (p.sectionXP[sec] || 0) + amount } };
+        });
+      }
+      function markItem(type, id, correct) {
+        setProgress(p => ({ ...p, [type]: { ...p[type], [id]: { attempts: ((p[type][id] || {}).attempts || 0) + 1, correct: ((p[type][id] || {}).correct || 0) + (correct ? 1 : 0) } } }));
+      }
+      const n2Readiness = Math.min(100, Math.round(progress.xp / 10));
+      return (
+        <div style={{ fontFamily: "'Segoe UI', sans-serif", minHeight: "100vh", background: "#0f0f1a", color: "#e8e8f0" }}>
+          <div style={{ background: "linear-gradient(135deg, #1a1a2e, #16213e)", borderBottom: "1px solid #2a2a4a", padding: "12px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 24 }}>🎌</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 16, color: "#a78bfa" }}>JLPT N3→N2</div>
+                <div style={{ fontSize: 11, color: "#7070a0" }}>Study App</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 16, fontSize: 13 }}>
+              <span>⚡ {progress.xp} XP</span>
+              <span>🔥 {progress.streak} day streak</span>
+              <span>📊 {n2Readiness}% N2 ready</span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 4, padding: "10px 20px", background: "#12122a", overflowX: "auto" }}>
+            {SECTIONS.map(s => (
+              <button key={s} onClick={() => setSection(s)} style={{ padding: "6px 14px", borderRadius: 20, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, background: section === s ? "#7c3aed" : "#1e1e3a", color: section === s ? "#fff" : "#9090c0", whiteSpace: "nowrap" }}>{s}</button>
+            ))}
+          </div>
+          <div style={{ padding: "20px", maxWidth: 800, margin: "0 auto" }}>
+            {section === "Dashboard" && <Dashboard progress={progress} n2Readiness={n2Readiness} setSection={setSection} />}
+            {section === "Vocabulary" && <VocabSection progress={progress} addXP={addXP} markItem={markItem} />}
+            {section === "Grammar" && <GrammarSection progress={progress} addXP={addXP} markItem={markItem} />}
+            {section === "Listening" && <ListeningSection progress={progress} addXP={addXP} markItem={markItem} />}
+            {section === "Reading" && <ReadingSection progress={progress} addXP={addXP} markItem={markItem} />}
+            {section === "Speaking" && <SpeakingSection progress={progress} addXP={addXP} markItem={markItem} />}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
