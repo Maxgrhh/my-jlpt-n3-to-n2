@@ -20,6 +20,12 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // Auto-reset if old version data exists
+    const APP_VERSION = "v3-gemini";
+    if (localStorage.getItem("jlpt_version") !== APP_VERSION) {
+      localStorage.clear();
+      localStorage.setItem("jlpt_version", APP_VERSION);
+    }
     const STORAGE_KEY = "jlpt_v3";
     function load() { try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r) : null; } catch { return null; } }
     function save(p) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {} }
